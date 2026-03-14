@@ -587,38 +587,20 @@
 
   <script>
     const YEAR = 2026;
+    
     const MONTH_NAMES = [
       'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
     ];
     const WEEKDAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
-    const companyDays = new Set([
-      '2026-01-01', '2026-01-06',
-      '2026-04-02', '2026-04-03', '2026-04-06',
-      '2026-05-01',
-      '2026-06-24',
-      '2026-08-03',
-      '2026-09-11',
-      '2026-10-01', '2026-10-12',
-      '2026-12-08', '2026-12-24', '2026-12-25'
-    ]);
+    const companyDays = new Set();
 
     const state = {
-      editing: 'agus',
-      view: 'shared',
-      agus: new Set([
-        '2026-03-30', '2026-03-31',
-        '2026-04-01',
-        '2026-05-04', '2026-05-05',
-        '2026-08-03', '2026-08-10', '2026-08-11', '2026-08-12', '2026-08-13', '2026-08-14',
-        '2026-08-17', '2026-08-18', '2026-08-19', '2026-08-20', '2026-08-21',
-        '2026-10-02',
-        '2026-12-28', '2026-12-29', '2026-12-30', '2026-12-31'
-      ]),
-      neal: new Set([
-        '2026-08-18', '2026-08-19', '2026-12-28'
-      ])
+        editing: 'agus',
+        view: 'shared',
+        agus: new Set(),
+        neal: new Set()
     };
 
     const monthsGrid = document.getElementById('monthsGrid');
@@ -667,22 +649,56 @@
       if (state.view === 'neal') return 'neal';
       return state.editing;
     }
+    
+    async function loadCalendarFromServer() {
+      const response = await fetch(`${API_BASE_URL}/calendar`);
 
-    function toggleDate(dateKey) {
-      const effectiveEditor = getEffectiveEditor();
-      const personSet = state[effectiveEditor];
+      const data = await response.json();
 
-      if (personSet.has(dateKey)) {
-        personSet.delete(dateKey);
-      } else {
-        personSet.add(dateKey);
-      }
+      companyDays.clear();
+      (data.companyDays || []).forEach(d => companyDays.add(d));
 
-      renderCalendar();
-      updateSummary();
-      updateLegend();
-      updateEditorUI();
+       state.agus = new Set(data.agus || []);
+       state.neal = new Set(data.neal || []);
+
+       renderCalendar();
+       updateSummary();
+       updateLegend();
+       updateEditorUI();
+     }
+
+     async function saveCalendarToServer() {
+        const response = await fetch(`${API_BASE_URL}/save`, {
+         method: 'POST',
+         headers: {
+         'Content-Type': 'application/json'
+     },
+         body: JSON.stringify({
+         agus: [...state.agus],
+         neal: [...state.neal]
+     })
+     });
+
+        return response.json();
     }
+    
+     async function toggleDate(dateKey) {
+        const effectiveEditor = getEffectiveEditor();
+        const personSet = state[effectiveEditor];
+    
+        if (personSet.has(dateKey)) {
+            personSet.delete(dateKey);
+        } else {
+            personSet.add(dateKey);
+        }
+    
+        renderCalendar();
+        updateSummary();
+        updateLegend();
+        updateEditorUI();
+    
+        await saveCalendarToServer();
+      }
 
     function updateSummary() {
       let overlap = 0;
@@ -897,11 +913,19 @@
       });
     });
 
-    updateEditorUI();
-    updateLegend();
-    renderCalendar();
-    updateSummary();
-    runSelfTests();
+    async function initApp() {
+
+        updateEditorUI();
+        updateLegend();
+
+    await loadCalendarFromServer();
+
+        runSelfTests();
+
+    setInterval(loadCalendarFromServer, 20000);
+  }
+
+  initApp();
 
     // Punto natural para futura persistencia:
     // localStorage.setItem('vacationPlanner2026', JSON.stringify({
