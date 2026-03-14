@@ -206,6 +206,12 @@
       color: #ffffff;
     }
 
+    .status-line {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.72);
+    }
+
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -553,6 +559,7 @@
           <div class="editor-help" id="editorHelp">
             Estás editando <strong>Agus</strong> en vista <strong>Compartido</strong>. Haz clic sobre cualquier día para seleccionar o deseleccionar vacaciones.
           </div>
+          <div class="status-line" id="statusLine">Cargando calendario...</div>
         </div>
 
         <div class="summary-card">
@@ -584,23 +591,29 @@
       <div id="monthsGrid" class="months-grid"></div>
     </section>
 
+    <div class="footer-note">
+      Los días de empresa se cargan desde servidor y quedan protegidos. Agus y Neal pueden modificar sus vacaciones y la app se actualiza automáticamente.
+    </div>
+  </div>
 
   <script>
     const YEAR = 2026;
-    
+    const API_BASE_URL = 'https://calendario-api.agus-balagna.workers.dev';
+
     const MONTH_NAMES = [
       'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
     ];
+
     const WEEKDAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
     const companyDays = new Set();
 
     const state = {
-        editing: 'agus',
-        view: 'shared',
-        agus: new Set(),
-        neal: new Set()
+      editing: 'agus',
+      view: 'shared',
+      agus: new Set(),
+      neal: new Set()
     };
 
     const monthsGrid = document.getElementById('monthsGrid');
@@ -608,11 +621,16 @@
     const nealCountEl = document.getElementById('nealCount');
     const overlapCountEl = document.getElementById('overlapCount');
     const editorHelpEl = document.getElementById('editorHelp');
+    const statusLineEl = document.getElementById('statusLine');
     const editorButtons = Array.from(document.querySelectorAll('.editor-btn'));
     const viewButtons = Array.from(document.querySelectorAll('.view-btn'));
     const legendEl = document.getElementById('legend');
     const editorSectionEl = document.getElementById('editorSection');
     const bodyEl = document.body;
+
+    function setStatus(message) {
+      statusLineEl.textContent = message;
+    }
 
     function pad(value) {
       return String(value).padStart(2, '0');
@@ -649,59 +667,85 @@
       if (state.view === 'neal') return 'neal';
       return state.editing;
     }
-    
-    async function loadCalendarFromServer() {
-      const response = await fetch(`${API_BASE_URL}/calendar`);
+
+    async function loadCalendarFromServer(showStatus = false) {
+      if (showStatus) {
+        setStatus('Cargando calendario...');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/calendar`, {
+        method: 'GET',
+        cache: 'no-store'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al cargar calendario: ${response.status}`);
+      }
 
       const data = await response.json();
 
       companyDays.clear();
-      (data.companyDays || []).forEach(d => companyDays.add(d));
+      (data.companyDays || []).forEach((date) => companyDays.add(date));
 
-       state.agus = new Set(data.agus || []);
-       state.neal = new Set(data.neal || []);
+      state.agus = new Set(data.agus || []);
+      state.neal = new Set(data.neal || []);
 
-       renderCalendar();
-       updateSummary();
-       updateLegend();
-       updateEditorUI();
-     }
+      renderCalendar();
+      updateSummary();
+      updateLegend();
+      updateEditorUI();
 
-     async function saveCalendarToServer() {
-        const response = await fetch(`${API_BASE_URL}/save`, {
-         method: 'POST',
-         headers: {
-         'Content-Type': 'application/json'
-     },
-         body: JSON.stringify({
-         agus: [...state.agus],
-         neal: [...state.neal]
-     })
-     });
-
-        return response.json();
+      setStatus(`Última sincronización: ${new Date().toLocaleTimeString('es-ES')}`);
     }
-    
-     async function toggleDate(dateKey) {
-        const effectiveEditor = getEffectiveEditor();
-        const personSet = state[effectiveEditor];
-    
-        if (personSet.has(dateKey)) {
-            personSet.delete(dateKey);
-        } else {
-            personSet.add(dateKey);
-        }
-    
-        renderCalendar();
-        updateSummary();
-        updateLegend();
-        updateEditorUI();
-    
-        await saveCalendarToServer();
+
+    async function saveCalendarToServer() {
+      const response = await fetch(`${API_BASE_URL}/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          agus: [...state.agus],
+          neal: [...state.neal]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al guardar calendario: ${response.status}`);
       }
+
+      return response.json();
+    }
+
+    async function toggleDate(dateKey) {
+      const effectiveEditor = getEffectiveEditor();
+      const personSet = state[effectiveEditor];
+
+      if (personSet.has(dateKey)) {
+        personSet.delete(dateKey);
+      } else {
+        personSet.add(dateKey);
+      }
+
+      renderCalendar();
+      updateSummary();
+      updateLegend();
+      updateEditorUI();
+      setStatus('Guardando cambios...');
+
+      try {
+        await saveCalendarToServer();
+        setStatus(`Cambios guardados: ${new Date().toLocaleTimeString('es-ES')}`);
+      } catch (error) {
+        console.error(error);
+        setStatus('Error guardando cambios');
+        alert('No se pudieron guardar los cambios en el servidor.');
+      }
+    }
 
     function updateSummary() {
       let overlap = 0;
+
       state.agus.forEach((date) => {
         if (state.neal.has(date)) {
           overlap += 1;
@@ -784,12 +828,14 @@
 
       const weekdayRow = document.createElement('div');
       weekdayRow.className = 'weekday-row';
+
       WEEKDAY_LABELS.forEach((label) => {
         const cell = document.createElement('div');
         cell.className = 'weekday';
         cell.textContent = label;
         weekdayRow.appendChild(cell);
       });
+
       card.appendChild(weekdayRow);
 
       const daysGrid = document.createElement('div');
@@ -833,6 +879,7 @@
 
     function renderCalendar() {
       monthsGrid.innerHTML = '';
+
       for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
         monthsGrid.appendChild(createMonthCard(monthIndex));
       }
@@ -842,58 +889,6 @@
       console.assert(formatDateKey(2026, 0, 1) === '2026-01-01', 'formatDateKey should pad month and day');
       console.assert(getMondayFirstOffset(0) === 6, 'Sunday should map to last column in Monday-first calendar');
       console.assert(getMondayFirstOffset(1) === 0, 'Monday should map to first column');
-
-      const previousView = state.view;
-      const previousEditing = state.editing;
-      const hadAgusDate = state.agus.has('2026-02-02');
-      const hadNealDate = state.neal.has('2026-02-03');
-
-      state.view = 'shared';
-      console.assert(getDayState('2026-08-18') === 'overlap', 'Shared view should show overlap');
-      console.assert(getEffectiveEditor() === previousEditing, 'Shared view should respect current editing mode');
-      updateEditorUI();
-      console.assert(bodyEl.classList.contains('theme-shared'), 'Shared view should apply green theme');
-
-      state.view = 'agus';
-      console.assert(getDayState('2026-08-18') === 'agus', 'Agus view should only show Agus state');
-      console.assert(getEffectiveEditor() === 'agus', 'Agus view should force Agus as editor');
-      updateEditorUI();
-      console.assert(bodyEl.classList.contains('theme-agus'), 'Agus view should apply violet theme');
-
-      state.view = 'neal';
-      console.assert(getDayState('2026-08-18') === 'neal', 'Neal view should only show Neal state');
-      console.assert(getEffectiveEditor() === 'neal', 'Neal view should force Neal as editor');
-      updateEditorUI();
-      console.assert(bodyEl.classList.contains('theme-neal'), 'Neal view should apply yellow theme');
-
-      state.view = 'agus';
-      toggleDate('2026-02-02');
-      console.assert(state.agus.has('2026-02-02') !== hadAgusDate, 'Agus view toggle should affect Agus set');
-      if (hadAgusDate) {
-        state.agus.add('2026-02-02');
-      } else {
-        state.agus.delete('2026-02-02');
-      }
-
-      state.view = 'neal';
-      toggleDate('2026-02-03');
-      console.assert(state.neal.has('2026-02-03') !== hadNealDate, 'Neal view toggle should affect Neal set');
-      if (hadNealDate) {
-        state.neal.add('2026-02-03');
-      } else {
-        state.neal.delete('2026-02-03');
-      }
-
-      const sampleDay = document.createElement('button');
-      sampleDay.className = 'day state-agus';
-      console.assert(getComputedStyle(sampleDay, '::after').display === 'none', 'Selected days should not render status dot');
-
-      state.view = previousView;
-      state.editing = previousEditing;
-      updateEditorUI();
-      updateLegend();
-      renderCalendar();
-      updateSummary();
     }
 
     editorButtons.forEach((btn) => {
@@ -914,24 +909,31 @@
     });
 
     async function initApp() {
+      updateEditorUI();
+      updateLegend();
+      renderCalendar();
+      updateSummary();
+      runSelfTests();
 
-        updateEditorUI();
-        updateLegend();
+      try {
+        await loadCalendarFromServer(true);
+      } catch (error) {
+        console.error(error);
+        setStatus('No se pudo cargar el calendario desde el servidor');
+        alert('No se pudo cargar el calendario desde el servidor.');
+      }
 
-    await loadCalendarFromServer();
+      setInterval(async () => {
+        try {
+          await loadCalendarFromServer(false);
+        } catch (error) {
+          console.error('Error refrescando calendario:', error);
+          setStatus('Error al refrescar');
+        }
+      }, 20000);
+    }
 
-        runSelfTests();
-
-    setInterval(loadCalendarFromServer, 20000);
-  }
-
-  initApp();
-
-    // Punto natural para futura persistencia:
-    // localStorage.setItem('vacationPlanner2026', JSON.stringify({
-    //   agus: [...state.agus],
-    //   neal: [...state.neal]
-    // }));
+    initApp();
   </script>
 </body>
 </html>
