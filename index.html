@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planificador de Vacaciones 2026</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --surface: #0b0b0b;
+      --surface-strong: #000000;
+      --border: rgba(255, 255, 255, 0.18);
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.78);
+      --shadow: 0 18px 44px rgba(0, 0, 0, 0.44);
+      --shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.34);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --company: #00c853;
+      --agus: #8b3dff;
+      --neal: #ffb300;
+      --overlap: #ff3b30;
+      --weekday-bg: #000000;
+      --theme-start: rgba(0, 200, 83, 0.42);
+      --theme-end: rgba(0, 230, 118, 0.28);
+      --theme-panel: rgba(0, 0, 0, 0.92);
+      --theme-chip: rgba(255, 255, 255, 0.08);
+      --theme-card-accent: rgba(255, 255, 255, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background:
+        radial-gradient(circle at top left, var(--theme-start), transparent 32%),
+        radial-gradient(circle at top right, var(--theme-end), transparent 30%),
+        linear-gradient(180deg, #050505 0%, #090909 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      transition: background 0.28s ease, color 0.28s ease;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .app {
+      max-width: 1560px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--theme-panel);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: var(--radius-xl);
+      transition: background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+    }
+
+    .hero {
+      padding: 28px;
+      display: grid;
+      gap: 24px;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .title-wrap p {
+      margin: 12px 0 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .year-badge {
+      padding: 14px 18px;
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      box-shadow: var(--shadow-soft);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .control-card,
+    .summary-card,
+    .legend-card {
+      background: var(--theme-panel);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 18px;
+      min-height: 100%;
+      transition: background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+    }
+
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.82);
+      margin-bottom: 14px;
+    }
+
+    .editor-switch,
+    .view-switch {
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.92);
+      border-radius: 999px;
+      padding: 5px;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      flex-wrap: wrap;
+      transition: background 0.28s ease, border-color 0.28s ease;
+    }
+
+    .view-switch {
+      margin-top: 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .editor-btn,
+    .view-btn {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: #ffffff;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .editor-btn:hover,
+    .view-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .editor-btn.active[data-person="agus"] {
+      background: var(--agus);
+      color: white;
+      box-shadow: 0 10px 24px rgba(139, 61, 255, 0.42);
+    }
+
+    .editor-btn.active[data-person="neal"] {
+      background: var(--neal);
+      color: white;
+      box-shadow: 0 10px 24px rgba(255, 179, 0, 0.36);
+    }
+
+    .view-btn.active {
+      background: #ffffff;
+      color: #000000;
+      box-shadow: 0 10px 24px rgba(255, 255, 255, 0.16);
+    }
+
+    .editor-help {
+      margin-top: 14px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .editor-help strong {
+      color: #ffffff;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .metric {
+      border-radius: 16px;
+      padding: 14px;
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      transition: background 0.28s ease, border-color 0.28s ease;
+    }
+
+    .metric .label {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.84rem;
+      margin-bottom: 8px;
+    }
+
+    .metric .value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: #ffffff;
+    }
+
+    .metric.agus .value { color: #c9a2ff; }
+    .metric.neal .value { color: #ffd36b; }
+    .metric.overlap .value { color: #ff8b84; }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-size: 0.94rem;
+      color: #ffffff;
+      transition: background 0.28s ease, border-color 0.28s ease;
+    }
+
+    .swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+      flex: 0 0 auto;
+    }
+
+    .swatch.company { background: var(--company); }
+    .swatch.agus { background: var(--agus); }
+    .swatch.neal { background: var(--neal); }
+    .swatch.overlap { background: var(--overlap); }
+
+    .calendar-shell {
+      padding: 24px;
+    }
+
+    .months-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .month-card {
+      background: var(--theme-panel);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 22px;
+      box-shadow: var(--shadow-soft);
+      padding: 16px;
+      min-width: 0;
+      transition: transform 0.24s ease, box-shadow 0.24s ease, background 0.28s ease, border-color 0.28s ease;
+    }
+
+    .month-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.34);
+    }
+
+    .month-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .month-name {
+      font-size: 1.08rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .month-meta {
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 0.8rem;
+    }
+
+    .weekday-row,
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .weekday {
+      text-align: center;
+      font-size: 0.73rem;
+      font-weight: 700;
+      color: #ffffff;
+      padding: 8px 0;
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      user-select: none;
+    }
+
+    .day,
+    .day-empty {
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+    }
+
+    .day-empty {
+      background: transparent;
+    }
+
+    .day {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #000000;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      color: #ffffff;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    .day:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .day:active {
+      transform: scale(0.98);
+    }
+
+    .day .num {
+      position: relative;
+      z-index: 2;
+    }
+
+    .day::after {
+      display: none;
+    }
+
+    .day.is-company {
+      background: linear-gradient(180deg, #00e676, #00c853);
+      border-color: rgba(0, 255, 136, 0.9);
+      color: #ffffff;
+    }
+
+    .day.is-company::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border-radius: 10px;
+      border: 1px dashed rgba(255, 255, 255, 0.36);
+      pointer-events: none;
+    }
+
+    .day.state-agus {
+      background: linear-gradient(180deg, #9b4dff, #7b2cff);
+      border-color: rgba(213, 177, 255, 0.85);
+      color: #ffffff;
+    }
+
+    .day.state-neal {
+      background: linear-gradient(180deg, #ffc400, #ff9800);
+      border-color: rgba(255, 224, 130, 0.88);
+      color: #ffffff;
+    }
+
+    .day.state-overlap {
+      background: linear-gradient(180deg, #ff453a, #e53935);
+      border-color: rgba(255, 170, 165, 0.88);
+      color: #ffffff;
+    }
+
+    .day.is-company.state-agus,
+    .day.is-company.state-neal,
+    .day.is-company.state-overlap {
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.56);
+    }
+
+    .day.is-editing {
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.14);
+    }
+
+    body.theme-shared {
+      --theme-start: rgba(0, 230, 118, 0.56);
+      --theme-end: rgba(0, 200, 83, 0.34);
+      --theme-panel: rgba(0, 0, 0, 0.92);
+      --theme-chip: rgba(0, 230, 118, 0.12);
+      --theme-card-accent: rgba(0, 230, 118, 0.08);
+    }
+
+    body.theme-agus {
+      --theme-start: rgba(155, 77, 255, 0.58);
+      --theme-end: rgba(123, 44, 255, 0.34);
+      --theme-panel: rgba(0, 0, 0, 0.92);
+      --theme-chip: rgba(155, 77, 255, 0.14);
+      --theme-card-accent: rgba(155, 77, 255, 0.08);
+    }
+
+    body.theme-neal {
+      --theme-start: rgba(255, 196, 0, 0.58);
+      --theme-end: rgba(255, 152, 0, 0.34);
+      --theme-panel: rgba(0, 0, 0, 0.92);
+      --theme-chip: rgba(255, 196, 0, 0.14);
+      --theme-card-accent: rgba(255, 196, 0, 0.08);
+    }
+
+    .footer-note {
+      padding: 0 28px 28px;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .footer-note strong {
+      color: #ffffff;
+    }
+
+    @media (max-width: 1280px) {
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .months-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 16px;
+      }
+
+      .hero,
+      .calendar-shell {
+        padding: 18px;
+      }
+
+      .months-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .summary-grid,
+      .legend {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .hero-top {
+        flex-direction: column;
+      }
+
+      .months-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .month-card {
+        padding: 14px;
+      }
+
+      .editor-switch,
+      .view-switch {
+        width: 100%;
+        display: grid;
+      }
+
+      .editor-switch {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .view-switch {
+        grid-template-columns: 1fr;
+      }
+
+      .editor-btn,
+      .view-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="panel hero">
+      <div class="hero-top">
+        <div class="title-wrap">
+          <h1>Planificador de vacaciones</h1>
+          <p>
+            Calendario anual 2026 con vistas individuales y compartida, edición visual por persona y una interfaz clara para planificar vacaciones corporativas.
+          </p>
+        </div>
+        <div class="year-badge">Año 2026</div>
+      </div>
+
+      <div class="toolbar">
+        <div class="control-card">
+          <div id="editorSection">
+            <div class="section-label">Modo de edición</div>
+            <div class="editor-switch" role="tablist" aria-label="Seleccionar persona para editar">
+              <button class="editor-btn active" data-person="agus" role="tab" aria-selected="true">Editar Agus</button>
+              <button class="editor-btn" data-person="neal" role="tab" aria-selected="false">Editar Neal</button>
+            </div>
+          </div>
+
+          <div class="section-label" style="margin-top: 18px;">Vista del calendario</div>
+          <div class="view-switch" role="tablist" aria-label="Seleccionar vista del calendario">
+            <button class="view-btn active" data-view="shared" role="tab" aria-selected="true">Compartido</button>
+            <button class="view-btn" data-view="agus" role="tab" aria-selected="false">Agus</button>
+            <button class="view-btn" data-view="neal" role="tab" aria-selected="false">Neal</button>
+          </div>
+
+          <div class="editor-help" id="editorHelp">
+            Estás editando <strong>Agus</strong> en vista <strong>Compartido</strong>. Haz clic sobre cualquier día para seleccionar o deseleccionar vacaciones.
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="section-label">Resumen</div>
+          <div class="summary-grid">
+            <div class="metric agus">
+              <div class="label">Agus</div>
+              <div class="value" id="agusCount">0</div>
+            </div>
+            <div class="metric neal">
+              <div class="label">Neal</div>
+              <div class="value" id="nealCount">0</div>
+            </div>
+            <div class="metric overlap">
+              <div class="label">Coinciden</div>
+              <div class="value" id="overlapCount">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="legend-card">
+          <div class="section-label">Leyenda</div>
+          <div class="legend" id="legend"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel calendar-shell">
+      <div id="monthsGrid" class="months-grid"></div>
+    </section>
+
+    <div class="footer-note">
+      Base preparada para extenderse con persistencia en <strong>localStorage</strong> más adelante. La lógica de selección ya está separada y lista para crecer.
+    </div>
+  </div>
+
+  <script>
+    const YEAR = 2026;
+    const MONTH_NAMES = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const WEEKDAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+    const companyDays = new Set([
+      '2026-01-01', '2026-01-06',
+      '2026-04-02', '2026-04-03', '2026-04-06',
+      '2026-05-01',
+      '2026-06-24',
+      '2026-08-03',
+      '2026-09-11',
+      '2026-10-01', '2026-10-12',
+      '2026-12-08', '2026-12-24', '2026-12-25'
+    ]);
+
+    const state = {
+      editing: 'agus',
+      view: 'shared',
+      agus: new Set([
+        '2026-03-30', '2026-03-31',
+        '2026-04-01',
+        '2026-05-04', '2026-05-05',
+        '2026-08-03', '2026-08-10', '2026-08-11', '2026-08-12', '2026-08-13', '2026-08-14',
+        '2026-08-17', '2026-08-18', '2026-08-19', '2026-08-20', '2026-08-21',
+        '2026-10-02',
+        '2026-12-28', '2026-12-29', '2026-12-30', '2026-12-31'
+      ]),
+      neal: new Set([
+        '2026-08-18', '2026-08-19', '2026-12-28'
+      ])
+    };
+
+    const monthsGrid = document.getElementById('monthsGrid');
+    const agusCountEl = document.getElementById('agusCount');
+    const nealCountEl = document.getElementById('nealCount');
+    const overlapCountEl = document.getElementById('overlapCount');
+    const editorHelpEl = document.getElementById('editorHelp');
+    const editorButtons = Array.from(document.querySelectorAll('.editor-btn'));
+    const viewButtons = Array.from(document.querySelectorAll('.view-btn'));
+    const legendEl = document.getElementById('legend');
+    const editorSectionEl = document.getElementById('editorSection');
+    const bodyEl = document.body;
+
+    function pad(value) {
+      return String(value).padStart(2, '0');
+    }
+
+    function formatDateKey(year, monthIndex, day) {
+      return `${year}-${pad(monthIndex + 1)}-${pad(day)}`;
+    }
+
+    function getDayState(dateKey) {
+      const hasAgus = state.agus.has(dateKey);
+      const hasNeal = state.neal.has(dateKey);
+
+      if (state.view === 'agus') {
+        return hasAgus ? 'agus' : 'none';
+      }
+
+      if (state.view === 'neal') {
+        return hasNeal ? 'neal' : 'none';
+      }
+
+      if (hasAgus && hasNeal) return 'overlap';
+      if (hasAgus) return 'agus';
+      if (hasNeal) return 'neal';
+      return 'none';
+    }
+
+    function getMondayFirstOffset(jsDay) {
+      return (jsDay + 6) % 7;
+    }
+
+    function getEffectiveEditor() {
+      if (state.view === 'agus') return 'agus';
+      if (state.view === 'neal') return 'neal';
+      return state.editing;
+    }
+
+    function toggleDate(dateKey) {
+      const effectiveEditor = getEffectiveEditor();
+      const personSet = state[effectiveEditor];
+
+      if (personSet.has(dateKey)) {
+        personSet.delete(dateKey);
+      } else {
+        personSet.add(dateKey);
+      }
+
+      renderCalendar();
+      updateSummary();
+      updateLegend();
+      updateEditorUI();
+    }
+
+    function updateSummary() {
+      let overlap = 0;
+      state.agus.forEach((date) => {
+        if (state.neal.has(date)) {
+          overlap += 1;
+        }
+      });
+
+      agusCountEl.textContent = state.agus.size;
+      nealCountEl.textContent = state.neal.size;
+      overlapCountEl.textContent = overlap;
+    }
+
+    function updateLegend() {
+      const itemsByView = {
+        shared: [
+          { cls: 'company', label: 'Días libres oficiales' },
+          { cls: 'agus', label: 'Agus' },
+          { cls: 'neal', label: 'Neal' },
+          { cls: 'overlap', label: 'Coincidencia Agus + Neal' }
+        ],
+        agus: [
+          { cls: 'company', label: 'Días libres oficiales' },
+          { cls: 'agus', label: 'Agus' }
+        ],
+        neal: [
+          { cls: 'company', label: 'Días libres oficiales' },
+          { cls: 'neal', label: 'Neal' }
+        ]
+      };
+
+      legendEl.innerHTML = itemsByView[state.view]
+        .map((item) => `<div class="legend-item"><span class="swatch ${item.cls}"></span>${item.label}</div>`)
+        .join('');
+    }
+
+    function updateEditorUI() {
+      const effectiveEditor = getEffectiveEditor();
+
+      editorButtons.forEach((btn) => {
+        const isActive = btn.dataset.person === state.editing;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+
+      viewButtons.forEach((btn) => {
+        const isActive = btn.dataset.view === state.view;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+
+      bodyEl.classList.remove('theme-shared', 'theme-agus', 'theme-neal');
+      bodyEl.classList.add(`theme-${state.view}`);
+
+      const isSharedView = state.view === 'shared';
+      editorSectionEl.classList.toggle('hidden', !isSharedView);
+
+      if (isSharedView) {
+        const personName = state.editing === 'agus' ? 'Agus' : 'Neal';
+        editorHelpEl.innerHTML = `Estás editando <strong>${personName}</strong> en vista <strong>Compartido</strong>. Haz clic sobre cualquier día para seleccionar o deseleccionar vacaciones.`;
+      } else {
+        const viewName = effectiveEditor === 'agus' ? 'Agus' : 'Neal';
+        editorHelpEl.innerHTML = `Vista <strong>${viewName}</strong>. Solo puedes editar los días de <strong>${viewName}</strong> en este calendario.`;
+      }
+    }
+
+    function createMonthCard(monthIndex) {
+      const firstDay = new Date(YEAR, monthIndex, 1);
+      const daysInMonth = new Date(YEAR, monthIndex + 1, 0).getDate();
+      const offset = getMondayFirstOffset(firstDay.getDay());
+
+      const card = document.createElement('article');
+      card.className = 'month-card';
+
+      const header = document.createElement('div');
+      header.className = 'month-header';
+      header.innerHTML = `
+        <div class="month-name">${MONTH_NAMES[monthIndex]}</div>
+        <div class="month-meta">${daysInMonth} días</div>
+      `;
+      card.appendChild(header);
+
+      const weekdayRow = document.createElement('div');
+      weekdayRow.className = 'weekday-row';
+      WEEKDAY_LABELS.forEach((label) => {
+        const cell = document.createElement('div');
+        cell.className = 'weekday';
+        cell.textContent = label;
+        weekdayRow.appendChild(cell);
+      });
+      card.appendChild(weekdayRow);
+
+      const daysGrid = document.createElement('div');
+      daysGrid.className = 'days-grid';
+
+      for (let i = 0; i < offset; i += 1) {
+        const empty = document.createElement('div');
+        empty.className = 'day-empty';
+        daysGrid.appendChild(empty);
+      }
+
+      for (let day = 1; day <= daysInMonth; day += 1) {
+        const dateKey = formatDateKey(YEAR, monthIndex, day);
+        const dayEl = document.createElement('button');
+        dayEl.type = 'button';
+        dayEl.className = 'day';
+        dayEl.setAttribute('aria-label', `${day} de ${MONTH_NAMES[monthIndex]} de ${YEAR}`);
+        dayEl.dataset.date = dateKey;
+
+        const visualState = getDayState(dateKey);
+        const isCompany = companyDays.has(dateKey);
+
+        if (isCompany) dayEl.classList.add('is-company');
+        if (visualState !== 'none') dayEl.classList.add(`state-${visualState}`);
+
+        if (
+          (getEffectiveEditor() === 'agus' && state.agus.has(dateKey)) ||
+          (getEffectiveEditor() === 'neal' && state.neal.has(dateKey))
+        ) {
+          dayEl.classList.add('is-editing');
+        }
+
+        dayEl.innerHTML = `<span class="num">${day}</span>`;
+        dayEl.addEventListener('click', () => toggleDate(dateKey));
+        daysGrid.appendChild(dayEl);
+      }
+
+      card.appendChild(daysGrid);
+      return card;
+    }
+
+    function renderCalendar() {
+      monthsGrid.innerHTML = '';
+      for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
+        monthsGrid.appendChild(createMonthCard(monthIndex));
+      }
+    }
+
+    function runSelfTests() {
+      console.assert(formatDateKey(2026, 0, 1) === '2026-01-01', 'formatDateKey should pad month and day');
+      console.assert(getMondayFirstOffset(0) === 6, 'Sunday should map to last column in Monday-first calendar');
+      console.assert(getMondayFirstOffset(1) === 0, 'Monday should map to first column');
+
+      const previousView = state.view;
+      const previousEditing = state.editing;
+      const hadAgusDate = state.agus.has('2026-02-02');
+      const hadNealDate = state.neal.has('2026-02-03');
+
+      state.view = 'shared';
+      console.assert(getDayState('2026-08-18') === 'overlap', 'Shared view should show overlap');
+      console.assert(getEffectiveEditor() === previousEditing, 'Shared view should respect current editing mode');
+      updateEditorUI();
+      console.assert(bodyEl.classList.contains('theme-shared'), 'Shared view should apply green theme');
+
+      state.view = 'agus';
+      console.assert(getDayState('2026-08-18') === 'agus', 'Agus view should only show Agus state');
+      console.assert(getEffectiveEditor() === 'agus', 'Agus view should force Agus as editor');
+      updateEditorUI();
+      console.assert(bodyEl.classList.contains('theme-agus'), 'Agus view should apply violet theme');
+
+      state.view = 'neal';
+      console.assert(getDayState('2026-08-18') === 'neal', 'Neal view should only show Neal state');
+      console.assert(getEffectiveEditor() === 'neal', 'Neal view should force Neal as editor');
+      updateEditorUI();
+      console.assert(bodyEl.classList.contains('theme-neal'), 'Neal view should apply yellow theme');
+
+      state.view = 'agus';
+      toggleDate('2026-02-02');
+      console.assert(state.agus.has('2026-02-02') !== hadAgusDate, 'Agus view toggle should affect Agus set');
+      if (hadAgusDate) {
+        state.agus.add('2026-02-02');
+      } else {
+        state.agus.delete('2026-02-02');
+      }
+
+      state.view = 'neal';
+      toggleDate('2026-02-03');
+      console.assert(state.neal.has('2026-02-03') !== hadNealDate, 'Neal view toggle should affect Neal set');
+      if (hadNealDate) {
+        state.neal.add('2026-02-03');
+      } else {
+        state.neal.delete('2026-02-03');
+      }
+
+      const sampleDay = document.createElement('button');
+      sampleDay.className = 'day state-agus';
+      console.assert(getComputedStyle(sampleDay, '::after').display === 'none', 'Selected days should not render status dot');
+
+      state.view = previousView;
+      state.editing = previousEditing;
+      updateEditorUI();
+      updateLegend();
+      renderCalendar();
+      updateSummary();
+    }
+
+    editorButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.editing = btn.dataset.person;
+        updateEditorUI();
+        renderCalendar();
+      });
+    });
+
+    viewButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.view = btn.dataset.view;
+        updateEditorUI();
+        updateLegend();
+        renderCalendar();
+      });
+    });
+
+    updateEditorUI();
+    updateLegend();
+    renderCalendar();
+    updateSummary();
+    runSelfTests();
+
+    // Punto natural para futura persistencia:
+    // localStorage.setItem('vacationPlanner2026', JSON.stringify({
+    //   agus: [...state.agus],
+    //   neal: [...state.neal]
+    // }));
+  </script>
+</body>
+</html>
