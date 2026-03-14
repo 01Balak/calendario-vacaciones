@@ -17,15 +17,12 @@
       --radius-xl: 24px;
       --radius-lg: 18px;
       --company: #00c853;
-      --agus: #ffb300;
-      --neal: #8b3dff;
+      --agus: #8b3dff;
+      --neal: #ffb300;
       --overlap: #ff3b30;
-      --weekday-bg: #000000;
       --theme-start: rgba(0, 200, 83, 0.42);
       --theme-end: rgba(0, 230, 118, 0.28);
       --theme-panel: rgba(0, 0, 0, 0.92);
-      --theme-chip: rgba(255, 255, 255, 0.08);
-      --theme-card-accent: rgba(255, 255, 255, 0.04);
     }
 
     * {
@@ -63,7 +60,6 @@
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border-radius: var(--radius-xl);
-      transition: background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
     }
 
     .hero {
@@ -125,7 +121,6 @@
       box-shadow: var(--shadow-soft);
       padding: 18px;
       min-height: 100%;
-      transition: background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
     }
 
     .section-label {
@@ -146,11 +141,6 @@
       gap: 6px;
       border: 1px solid rgba(255, 255, 255, 0.12);
       flex-wrap: wrap;
-      transition: background 0.28s ease, border-color 0.28s ease;
-    }
-
-    .view-switch {
-      margin-top: 0;
     }
 
     .hidden {
@@ -206,6 +196,12 @@
       color: #ffffff;
     }
 
+    .status-line {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.72);
+    }
+
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -217,7 +213,6 @@
       padding: 14px;
       background: #000000;
       border: 1px solid rgba(255, 255, 255, 0.14);
-      transition: background 0.28s ease, border-color 0.28s ease;
     }
 
     .metric .label {
@@ -233,8 +228,8 @@
       color: #ffffff;
     }
 
-    .metric.agus .value { color: #ffd36b; }
-    .metric.neal .value { color: #c9a2ff; }
+    .metric.agus .value { color: #c9a2ff; }
+    .metric.neal .value { color: #ffd36b; }
     .metric.overlap .value { color: #ff8b84; }
 
     .legend {
@@ -253,7 +248,6 @@
       border: 1px solid rgba(255, 255, 255, 0.14);
       font-size: 0.94rem;
       color: #ffffff;
-      transition: background 0.28s ease, border-color 0.28s ease;
     }
 
     .swatch {
@@ -286,12 +280,6 @@
       box-shadow: var(--shadow-soft);
       padding: 16px;
       min-width: 0;
-      transition: transform 0.24s ease, box-shadow 0.24s ease, background 0.28s ease, border-color 0.28s ease;
-    }
-
-    .month-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.34);
     }
 
     .month-header {
@@ -374,10 +362,6 @@
       z-index: 2;
     }
 
-    .day::after {
-      display: none;
-    }
-
     .day.is-company {
       background: linear-gradient(180deg, #00e676, #00c853);
       border-color: rgba(0, 255, 136, 0.9);
@@ -394,14 +378,14 @@
     }
 
     .day.state-agus {
-      background: linear-gradient(180deg, #ffc400, #ff9800);
-      border-color: rgba(255, 224, 130, 0.88);
+      background: linear-gradient(180deg, #9b4dff, #7b2cff);
+      border-color: rgba(213, 177, 255, 0.85);
       color: #ffffff;
     }
 
     .day.state-neal {
-      background: linear-gradient(180deg, #9b4dff, #7b2cff);
-      border-color: rgba(213, 177, 255, 0.85);
+      background: linear-gradient(180deg, #ffc400, #ff9800);
+      border-color: rgba(255, 224, 130, 0.88);
       color: #ffffff;
     }
 
@@ -424,25 +408,16 @@
     body.theme-shared {
       --theme-start: rgba(0, 230, 118, 0.56);
       --theme-end: rgba(0, 200, 83, 0.34);
-      --theme-panel: rgba(0, 0, 0, 0.92);
-      --theme-chip: rgba(0, 230, 118, 0.12);
-      --theme-card-accent: rgba(0, 230, 118, 0.08);
     }
 
     body.theme-agus {
-      --theme-start: rgba(255, 196, 0, 0.58);
-      --theme-end: rgba(255, 152, 0, 0.34);
-      --theme-panel: rgba(0, 0, 0, 0.92);
-      --theme-chip: rgba(155, 77, 255, 0.14);
-      --theme-card-accent: rgba(155, 77, 255, 0.08);
+      --theme-start: rgba(155, 77, 255, 0.58);
+      --theme-end: rgba(123, 44, 255, 0.34);
     }
 
     body.theme-neal {
-      --theme-start: rgba(155, 77, 255, 0.58);
-      --theme-end: rgba(123, 44, 255, 0.34);
-      --theme-panel: rgba(0, 0, 0, 0.92);
-      --theme-chip: rgba(255, 196, 0, 0.14);
-      --theme-card-accent: rgba(255, 196, 0, 0.08);
+      --theme-start: rgba(255, 196, 0, 0.58);
+      --theme-end: rgba(255, 152, 0, 0.34);
     }
 
     .footer-note {
@@ -553,6 +528,8 @@
           <div class="editor-help" id="editorHelp">
             Estás editando <strong>Agus</strong> en vista <strong>Compartido</strong>. Haz clic sobre cualquier día para seleccionar o deseleccionar vacaciones.
           </div>
+
+          <div class="status-line" id="statusLine">Cargando calendario...</div>
         </div>
 
         <div class="summary-card">
@@ -585,44 +562,28 @@
     </section>
 
     <div class="footer-note">
-      Base preparada para extenderse con persistencia en <strong>localStorage</strong> más adelante. La lógica de selección ya está separada y lista para crecer.
+      Los días de empresa se cargan desde servidor y quedan protegidos. Agus y Neal pueden modificar sus vacaciones y la app se actualiza automáticamente.
     </div>
   </div>
 
   <script>
     const YEAR = 2026;
+    const API_BASE_URL = 'https://calendario-api.agus-balagna.workers.dev';
+
     const MONTH_NAMES = [
       'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
     ];
+
     const WEEKDAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
-    const companyDays = new Set([
-      '2026-01-01', '2026-01-06',
-      '2026-04-02', '2026-04-03', '2026-04-06',
-      '2026-05-01',
-      '2026-06-24',
-      '2026-08-03',
-      '2026-09-11',
-      '2026-10-01', '2026-10-12',
-      '2026-12-08', '2026-12-24', '2026-12-25'
-    ]);
+    const companyDays = new Set();
 
     const state = {
       editing: 'agus',
       view: 'shared',
-      agus: new Set([
-        '2026-03-30', '2026-03-31',
-        '2026-04-01',
-        '2026-05-04', '2026-05-05',
-        '2026-08-03', '2026-08-10', '2026-08-11', '2026-08-12', '2026-08-13', '2026-08-14',
-        '2026-08-17', '2026-08-18', '2026-08-19', '2026-08-20', '2026-08-21',
-        '2026-10-02',
-        '2026-12-28', '2026-12-29', '2026-12-30', '2026-12-31'
-      ]),
-      neal: new Set([
-        '2026-08-18', '2026-08-19', '2026-12-28'
-      ])
+      agus: new Set(),
+      neal: new Set()
     };
 
     const monthsGrid = document.getElementById('monthsGrid');
@@ -630,11 +591,16 @@
     const nealCountEl = document.getElementById('nealCount');
     const overlapCountEl = document.getElementById('overlapCount');
     const editorHelpEl = document.getElementById('editorHelp');
+    const statusLineEl = document.getElementById('statusLine');
     const editorButtons = Array.from(document.querySelectorAll('.editor-btn'));
     const viewButtons = Array.from(document.querySelectorAll('.view-btn'));
     const legendEl = document.getElementById('legend');
     const editorSectionEl = document.getElementById('editorSection');
     const bodyEl = document.body;
+
+    function setStatus(message) {
+      statusLineEl.textContent = message;
+    }
 
     function pad(value) {
       return String(value).padStart(2, '0');
@@ -672,7 +638,56 @@
       return state.editing;
     }
 
-    function toggleDate(dateKey) {
+    async function loadCalendarFromServer(showStatus = false) {
+      if (showStatus) {
+        setStatus('Cargando calendario...');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/calendar`, {
+        method: 'GET',
+        cache: 'no-store'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al cargar calendario: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      companyDays.clear();
+      (data.companyDays || []).forEach((date) => companyDays.add(date));
+
+      state.agus = new Set(data.agus || []);
+      state.neal = new Set(data.neal || []);
+
+      renderCalendar();
+      updateSummary();
+      updateLegend();
+      updateEditorUI();
+
+      setStatus(`Última sincronización: ${new Date().toLocaleTimeString('es-ES')}`);
+    }
+
+    async function saveCalendarToServer() {
+      const response = await fetch(`${API_BASE_URL}/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          agus: [...state.agus],
+          neal: [...state.neal]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al guardar calendario: ${response.status}`);
+      }
+
+      return response.json();
+    }
+
+    async function toggleDate(dateKey) {
       const effectiveEditor = getEffectiveEditor();
       const personSet = state[effectiveEditor];
 
@@ -686,10 +701,21 @@
       updateSummary();
       updateLegend();
       updateEditorUI();
+      setStatus('Guardando cambios...');
+
+      try {
+        await saveCalendarToServer();
+        setStatus(`Cambios guardados: ${new Date().toLocaleTimeString('es-ES')}`);
+      } catch (error) {
+        console.error(error);
+        setStatus('Error guardando cambios');
+        alert('No se pudieron guardar los cambios en el servidor.');
+      }
     }
 
     function updateSummary() {
       let overlap = 0;
+
       state.agus.forEach((date) => {
         if (state.neal.has(date)) {
           overlap += 1;
@@ -772,12 +798,14 @@
 
       const weekdayRow = document.createElement('div');
       weekdayRow.className = 'weekday-row';
+
       WEEKDAY_LABELS.forEach((label) => {
         const cell = document.createElement('div');
         cell.className = 'weekday';
         cell.textContent = label;
         weekdayRow.appendChild(cell);
       });
+
       card.appendChild(weekdayRow);
 
       const daysGrid = document.createElement('div');
@@ -821,6 +849,7 @@
 
     function renderCalendar() {
       monthsGrid.innerHTML = '';
+
       for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
         monthsGrid.appendChild(createMonthCard(monthIndex));
       }
@@ -830,58 +859,6 @@
       console.assert(formatDateKey(2026, 0, 1) === '2026-01-01', 'formatDateKey should pad month and day');
       console.assert(getMondayFirstOffset(0) === 6, 'Sunday should map to last column in Monday-first calendar');
       console.assert(getMondayFirstOffset(1) === 0, 'Monday should map to first column');
-
-      const previousView = state.view;
-      const previousEditing = state.editing;
-      const hadAgusDate = state.agus.has('2026-02-02');
-      const hadNealDate = state.neal.has('2026-02-03');
-
-      state.view = 'shared';
-      console.assert(getDayState('2026-08-18') === 'overlap', 'Shared view should show overlap');
-      console.assert(getEffectiveEditor() === previousEditing, 'Shared view should respect current editing mode');
-      updateEditorUI();
-      console.assert(bodyEl.classList.contains('theme-shared'), 'Shared view should apply green theme');
-
-      state.view = 'agus';
-      console.assert(getDayState('2026-08-18') === 'agus', 'Agus view should only show Agus state');
-      console.assert(getEffectiveEditor() === 'agus', 'Agus view should force Agus as editor');
-      updateEditorUI();
-      console.assert(bodyEl.classList.contains('theme-agus'), 'Agus view should apply violet theme');
-
-      state.view = 'neal';
-      console.assert(getDayState('2026-08-18') === 'neal', 'Neal view should only show Neal state');
-      console.assert(getEffectiveEditor() === 'neal', 'Neal view should force Neal as editor');
-      updateEditorUI();
-      console.assert(bodyEl.classList.contains('theme-neal'), 'Neal view should apply yellow theme');
-
-      state.view = 'agus';
-      toggleDate('2026-02-02');
-      console.assert(state.agus.has('2026-02-02') !== hadAgusDate, 'Agus view toggle should affect Agus set');
-      if (hadAgusDate) {
-        state.agus.add('2026-02-02');
-      } else {
-        state.agus.delete('2026-02-02');
-      }
-
-      state.view = 'neal';
-      toggleDate('2026-02-03');
-      console.assert(state.neal.has('2026-02-03') !== hadNealDate, 'Neal view toggle should affect Neal set');
-      if (hadNealDate) {
-        state.neal.add('2026-02-03');
-      } else {
-        state.neal.delete('2026-02-03');
-      }
-
-      const sampleDay = document.createElement('button');
-      sampleDay.className = 'day state-agus';
-      console.assert(getComputedStyle(sampleDay, '::after').display === 'none', 'Selected days should not render status dot');
-
-      state.view = previousView;
-      state.editing = previousEditing;
-      updateEditorUI();
-      updateLegend();
-      renderCalendar();
-      updateSummary();
     }
 
     editorButtons.forEach((btn) => {
@@ -901,17 +878,32 @@
       });
     });
 
-    updateEditorUI();
-    updateLegend();
-    renderCalendar();
-    updateSummary();
-    runSelfTests();
+    async function initApp() {
+      updateEditorUI();
+      updateLegend();
+      renderCalendar();
+      updateSummary();
+      runSelfTests();
 
-    // Punto natural para futura persistencia:
-    // localStorage.setItem('vacationPlanner2026', JSON.stringify({
-    //   agus: [...state.agus],
-    //   neal: [...state.neal]
-    // }));
+      try {
+        await loadCalendarFromServer(true);
+      } catch (error) {
+        console.error(error);
+        setStatus('No se pudo cargar el calendario desde el servidor');
+        alert('No se pudo cargar el calendario desde el servidor.');
+      }
+
+      setInterval(async () => {
+        try {
+          await loadCalendarFromServer(false);
+        } catch (error) {
+          console.error('Error refrescando calendario:', error);
+          setStatus('Error al refrescar');
+        }
+      }, 20000);
+    }
+
+    initApp();
   </script>
 </body>
 </html>
